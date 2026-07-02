@@ -15,18 +15,7 @@ jobs:
         run: |
           if [ -f "index.html" ]; then
             echo "Checking HTML syntax..."
-            python3 - <<'PY'
-import html.parser, sys
-with open('index.html', 'r', encoding='utf-8') as f:
-    content = f.read()
-parser = html.parser.HTMLParser()
-try:
-    parser.feed(content)
-except Exception as exc:
-    print(f"HTML validation failed: {exc}")
-    sys.exit(1)
-print('HTML validation passed')
-PY
+            python3 -c "import html.parser, sys; content=open('index.html', 'r', encoding='utf-8').read(); parser=html.parser.HTMLParser(); parser.feed(content); print('HTML validation passed')"
           else
             echo "File index.html not found"
             exit 1
