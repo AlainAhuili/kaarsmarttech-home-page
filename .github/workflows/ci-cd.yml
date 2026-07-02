@@ -1,4 +1,4 @@
-name: CI/CD
+name: PHP CI
 
 on:
   push:
@@ -6,35 +6,27 @@ on:
   pull_request:
     branches: [master]
 
-permissions:
-  contents: write
-
 jobs:
-  validate-html:
+  validate-php:
+    name: Validate PHP syntax
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Validate HTML
-        run: |
-          if [ -f "index.html" ]; then
-            echo "Checking HTML syntax..."
-            python3 -c "import html.parser, sys; content=open('index.html', 'r', encoding='utf-8').read(); parser=html.parser.HTMLParser(); parser.feed(content); print('HTML validation passed')"
-          else
-            echo "File index.html not found"
-            exit 1
-          fi
-  deploy-pages:
-    needs: validate-html
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/master'
-    steps:
-      - uses: actions/checkout@v4
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v4
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./
-          publish_branch: gh-pages
-          user_name: github-actions
-          user_email: github-actions@github.com
-          commit_message: "Deploy site from GitHub Actions"
+          php-version: 8.2
+      - name: Validate PHP files
+        run: |
+          find . -type f -name '*.php' -not -path './.git/*' -print0 | xargs -0 -n1 php -l
+
+  validate-docker:
+    name: Validate Docker Compose
+    runs-on: ubuntu-latest
+    needs: validate-php
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Validate docker-compose
+        run: docker compose config
