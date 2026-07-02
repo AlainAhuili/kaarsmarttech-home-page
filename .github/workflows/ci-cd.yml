@@ -19,6 +19,7 @@ jobs:
           else
             echo "File index.html not found"
             exit 1
+          fi
   deploy-pages:
     needs: validate-html
     runs-on: ubuntu-latest
